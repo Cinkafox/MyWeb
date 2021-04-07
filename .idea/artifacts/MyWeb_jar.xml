@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="MyWeb:jar">
+    <output-path>$USER_HOME$/Desktop</output-path>
+    <root id="archive" name="MyWeb.jar">
+      <element id="module-output" name="MyWeb" />
+    </root>
+  </artifact>
+</component>

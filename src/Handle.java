@@ -1,18 +1,13 @@
-import javax.xml.soap.SAAJResult;
+
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
 import java.util.Scanner;
 
 public class Handle extends Thread {
-    private Socket socket;
-    private String type;
-    private String text;
+    private final Socket socket;
     private String ldir = new File("").getAbsolutePath();
-    private String absolutedir = new File("").getAbsolutePath();
-    private String search;
-    private String inputurl;
-    private int port;
+    private final String absolutedir = new File("").getAbsolutePath();
+    private final int port;
 
     public Handle(Socket socket,int port) {
         this.socket = socket;
@@ -21,30 +16,24 @@ public class Handle extends Thread {
 
     public void run(){
         try(InputStream input = socket.getInputStream(); OutputStream output = socket.getOutputStream()){
-                inputurl = getURL(input);
+            String inputurl = getURL(input);
                 ldir = ldir + "\\" + inputurl;
                 System.out.println(socket.getInetAddress() + " search:" + inputurl);
-                type = "html";
-                if (new File(ldir).exists() && localFiles() != null && getType(inputurl).equalsIgnoreCase("")) {
-                    text = "list:\n";
-                    for (int i = 0; i < localFiles().length; i++) {
-                        String outurl = removeFirstChars(ldir,absolutedir.length()) + "\\" + localFiles()[i].getName();
-                        if(inputurl.trim().equalsIgnoreCase("")){
-                            outurl = localFiles()[i].getName();
-                        }
-                        text = text + "<a href=\"" + outurl + "\">" + localFiles()[i].getName() + "</a>" + "\n";
-                    }
-                    output.write((SetUp(text.length(),type(type))+text).getBytes());
+            String type = "html";
+            String text;
+            if (new File(ldir).exists() && localFiles() != null && getType(inputurl).equalsIgnoreCase("")) {
+                    MainHTML html = new MainHTML(inputurl,ldir,absolutedir,localFiles());
+                    text = html.getHTML();
+                    output.write((SetUp(text.length(),type(type))+ text).getBytes());
                 }else if(!getType(inputurl).equalsIgnoreCase("") && new File(inputurl).exists()){
                     byte[] b = readFile(inputurl);
                     output.write(SetUp(b.length,type(getType(inputurl))).getBytes());
                     output.write(b);
                 }else {
                     text = "NOT_FOUND";
-                    output.write((SetUp(text.length(),type(type))+text).getBytes());
+                    output.write((SetUp(text.length(),type(type))+ text).getBytes());
                 }
              output.flush();
-                input.close();
         }catch (IOException e){
             e.printStackTrace();
         }
@@ -75,8 +64,7 @@ public class Handle extends Thread {
 
     public String getType(String in){
         try {
-        String type = in.split("\\.")[1];
-        return type;
+            return in.split("\\.")[1];
         }catch (ArrayIndexOutOfBoundsException e) {
             return  "";
         }
