@@ -18,7 +18,8 @@ public class Handle extends Thread {
         try(InputStream input = socket.getInputStream(); OutputStream output = socket.getOutputStream()){
             String inputurl = getURL(input);
                 ldir = ldir + "\\" + inputurl;
-                System.out.println(socket.getInetAddress() + " search:" + inputurl);
+                //String test = getIN(input);
+                System.out.println(socket.getInetAddress() + " :" + inputurl);
             String type = "html";
             String text;
             if (new File(ldir).exists() && localFiles() != null && getType(inputurl).equalsIgnoreCase("")) {
@@ -51,7 +52,27 @@ public class Handle extends Thread {
         Scanner scanner = new Scanner(in);
         if(scanner.hasNextLine()) {
             String tx = scanner.nextLine();
-            return removeLastChar(tx.replaceAll("GET /","").replaceAll("HTTP/1.1",""));
+            String type = tx.substring(0,tx.length()-(tx.length()-4));
+            System.out.println(type);
+            System.out.println(tx);
+            if(type.trim().equalsIgnoreCase("GET")) {
+                System.out.println("Fick");
+                return removeLastChar(tx.replaceAll("GET /", "").replaceAll("HTTP/1.1", ""));
+            }else{
+                return "";
+            }
+        }else{
+            return "";
+        }
+    }
+
+    public String getIN(InputStream in){
+        Scanner scanner = new Scanner(in);
+        if(scanner.hasNextLine()) {
+            String text = scanner.nextLine();
+            String type = text.substring(0);
+            System.out.println(type);
+            return text;
         }else{
             return "";
         }
