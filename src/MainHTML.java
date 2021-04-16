@@ -33,6 +33,7 @@ public class MainHTML {
     private void post(){
         text = text + " " +
                         "<hr>\n" +
+                "" +
                 "  </body>\n" +
                 "</html>\n";
     }

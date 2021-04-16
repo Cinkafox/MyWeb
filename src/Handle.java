@@ -53,11 +53,16 @@ public class Handle extends Thread {
         if(scanner.hasNextLine()) {
             String tx = scanner.nextLine();
             String type = tx.substring(0,tx.length()-(tx.length()-4));
-            System.out.println(type);
-            System.out.println(tx);
             if(type.trim().equalsIgnoreCase("GET")) {
+                //if(tx.split("\\?")[1].equalsIgnoreCase("")){
+
+                //}
                 return removeLastChar(tx.replaceAll("GET /", "").replaceAll("HTTP/1.1", ""));
             }else{
+                String temp = "";
+                while(scanner.hasNextLine()){
+                    temp = temp + scanner.nextLine() + " [] \n";
+                }
                 return "";
             }
         }else{
@@ -84,7 +89,8 @@ public class Handle extends Thread {
 
     public String getType(String in){
         try {
-            return in.split("\\.")[1];
+            String[] temp = in.split("\\.");
+            return temp[temp.length-1];
         }catch (ArrayIndexOutOfBoundsException e) {
             return  "";
         }
@@ -151,5 +157,16 @@ public class Handle extends Thread {
 
         return  buffer;
 
+    }
+    public void loadFile(String name,byte[] bt) throws IOException {
+        File file = new File(name);
+        if(!file.exists()){
+            file.createNewFile();
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            fileOutputStream.write(bt);
+            fileOutputStream.close();
+        }else{
+            System.out.println("File is already exist!");
+        }
     }
 }
