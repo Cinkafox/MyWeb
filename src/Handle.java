@@ -56,7 +56,6 @@ public class Handle extends Thread {
             System.out.println(type);
             System.out.println(tx);
             if(type.trim().equalsIgnoreCase("GET")) {
-                System.out.println("Fick");
                 return removeLastChar(tx.replaceAll("GET /", "").replaceAll("HTTP/1.1", ""));
             }else{
                 return "";

@@ -14,7 +14,7 @@ public class Main {
                     System.out.println("Usage:port is port =P");
                     System.exit(0);
                     break;
-                default:
+                case "":
                     System.out.println("run java -jar MyCMS.jar -help");
                     System.exit(0);
                     break;
