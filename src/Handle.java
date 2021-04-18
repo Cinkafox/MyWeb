@@ -8,24 +8,32 @@ public class Handle extends Thread {
     private String ldir = new File("").getAbsolutePath();
     private final String absolutedir = new File("").getAbsolutePath();
     private final int port;
+    private final String index;
 
-    public Handle(Socket socket,int port) {
+    public Handle(Socket socket,int port,String index) {
         this.socket = socket;
         this.port = port;
+        this.index = index;
     }
 
     public void run(){
         try(InputStream input = socket.getInputStream(); OutputStream output = socket.getOutputStream()){
+            File file = new File(index);
             String inputurl = getURL(input);
                 ldir = ldir + "\\" + inputurl;
-                //String test = getIN(input);
                 System.out.println(socket.getInetAddress() + " :" + inputurl);
             String type = "html";
             String text;
             if (new File(ldir).exists() && localFiles() != null && getType(inputurl).equalsIgnoreCase("")) {
                     MainHTML html = new MainHTML(inputurl,ldir,absolutedir,localFiles());
-                    text = html.getHTML();
-                    output.write((SetUp(text.length(),type(type))+ text).getBytes());
+                    if(file.exists()){
+                        byte[] b = readFile(file.getName());
+                        output.write((SetUp(b.length,type(type))).getBytes());
+                        output.write(b);
+                    }else {
+                        text = html.getHTML();
+                        output.write((SetUp(text.length(),type(type))+ text).getBytes());
+                    }
                 }else if(!getType(inputurl).equalsIgnoreCase("") && new File(inputurl).exists()){
                     byte[] b = readFile(inputurl);
                     output.write(SetUp(b.length,type(getType(inputurl))).getBytes());
@@ -100,28 +108,15 @@ public class Handle extends Thread {
         String temp;
         switch (type.toLowerCase().trim()){
             case "html":
-                temp = "text/" + type;
-                break;
-            case "png":
-                temp = "image/" + type;
-                break;
-            case "jpeg":
-                temp = "image/" + type;
-                break;
             case "css":
                 temp = "text/" + type;
                 break;
-            case "exe":
-                temp = "application/octet-stream";
+            case "png":
+            case "jpeg":
+                temp = "image/" + type;
                 break;
-            case "jar":
-                temp = "application/octet-stream";
-                break;
-            case "zip":
-                temp = "application/octet-stream";
-                break;
-            case "rar":
-                temp = "application/octet-stream";
+            case "txt":
+                temp = "text/html";
                 break;
             default:
                 temp = "application/octet-stream";
