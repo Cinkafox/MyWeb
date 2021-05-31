@@ -1,14 +1,19 @@
 
+import GetWorker.Get;
+import GetWorker.ValueGet;
+
 import java.io.*;
 import java.net.Socket;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Handle extends Thread {
     private final Socket socket;
     private String ldir = new File("").getAbsolutePath();
-    private final String absolutedir = new File("").getAbsolutePath();
+    private String absolutedir = ldir;
     private final int port;
     private final String index;
+
 
     public Handle(Socket socket,int port,String index) {
         this.socket = socket;
@@ -18,77 +23,75 @@ public class Handle extends Thread {
 
     public void run(){
         try(InputStream input = socket.getInputStream(); OutputStream output = socket.getOutputStream()){
-            File file = new File(index);
-            String inputurl = getURL(input);
-                ldir = ldir + "\\" + inputurl;
-                System.out.println(socket.getInetAddress() + " :" + inputurl);
-            String type = "html";
-            String text;
-            if (new File(ldir).exists() && localFiles() != null && getType(inputurl).equalsIgnoreCase("")) {
-                    MainHTML html = new MainHTML(inputurl,ldir,absolutedir,localFiles());
-                    if(file.exists()){
-                        byte[] b = readFile(file.getName());
-                        output.write((SetUp(b.length,type(type))).getBytes());
-                        output.write(b);
-                    }else {
-                        text = html.getHTML();
-                        output.write((SetUp(text.length(),type(type))+ text).getBytes());
-                    }
-                }else if(!getType(inputurl).equalsIgnoreCase("") && new File(inputurl).exists()){
-                    byte[] b = readFile(inputurl);
-                    output.write(SetUp(b.length,type(getType(inputurl))).getBytes());
-                    output.write(b);
-                }else {
-                    text = "NOT_FOUND";
-                    output.write((SetUp(text.length(),type(type))+ text).getBytes());
-                }
-             output.flush();
+            st(output,input);
+
         }catch (IOException e){
             e.printStackTrace();
         }
     }
 
+    private void st(OutputStream output, InputStream input) throws IOException{
+
+        String inputurl = getURL(input)[1];
+        ldir = ldir + "/" + inputurl;
+
+        String type = "html";
+        String text;
+        if (new File(ldir).exists() && new File(ldir).isDirectory()) {
+            MainHTML html = new MainHTML(inputurl,ldir,absolutedir,localFiles());
+            File file = new File(ldir + "index.html.");
+            if(file.exists()){
+                byte[] b = readFile(file.getName());
+                output.write((SetUp(b.length,type(type))).getBytes());
+                output.write(b);
+            }else {
+                text = html.getHTML();
+                output.write((SetUp(text.length(),type(type))+ text).getBytes());
+            }
+        }else if(!getType(inputurl).equalsIgnoreCase("") && new File(ldir).exists()){
+            byte[] b = readFile(ldir);
+            output.write(SetUp(b.length,type(getType(inputurl))).getBytes());
+            output.write(b);
+        }else {
+            text = "NOT_FOUND";
+            output.write((SetUp(text.length(),type(type))+ text).getBytes());
+        }
+        output.flush();
+        input.close();
+    }
+
     public String SetUp(int length,String type){
         return "HTTP/1.1 200 OK\r\n" +
-                "Server: YarServer/2009-09-09\r\n" +
+                "Server: MyWeb\r\n" +
                 "Content-Type: " + type +"\r\n" +
                 "Content-length: "+ length +" \r\n" +
                 "Connection: close\r\n\r\n";
     }
 
-    public String getURL(InputStream in){
+    public String[] getURL(InputStream in){
         Scanner scanner = new Scanner(in);
         if(scanner.hasNextLine()) {
-            String tx = scanner.nextLine();
-            String type = tx.substring(0,tx.length()-(tx.length()-4));
-            if(type.trim().equalsIgnoreCase("GET")) {
-                //if(tx.split("\\?")[1].equalsIgnoreCase("")){
-
-                //}
-                return removeLastChar(tx.replaceAll("GET /", "").replaceAll("HTTP/1.1", ""));
+            String[] GetPost = GetPost(scanner.nextLine());
+            if(GetPost[0].equalsIgnoreCase("GET")){
+                return new String[]{"1",GetPost[1]};
             }else{
-                String temp = "";
                 while(scanner.hasNextLine()){
-                    temp = temp + scanner.nextLine() + " [] \n";
+                    System.out.println(scanner.nextLine());
                 }
-                return "";
+                return new String[]{"1","POST"};
             }
         }else{
-            return "";
+            return new String[]{"1",""};
         }
     }
 
-    public String getIN(InputStream in){
-        Scanner scanner = new Scanner(in);
-        if(scanner.hasNextLine()) {
-            String text = scanner.nextLine();
-            String type = text.substring(0);
-            System.out.println(type);
-            return text;
-        }else{
-            return "";
-        }
+    public String[] GetPost(String in){
+        String GetPost = spleeting(in,0);
+        String out = removeFirstChars(spleeting(in,1),1);
+        return new String[] {GetPost.trim(),out};
     }
+
+
 
     public File[] localFiles(){
         File file = new File(ldir);
@@ -133,7 +136,27 @@ public class Handle extends Thread {
         return str.substring(0, str.length() - chars);
     }
     public static String removeFirstChars(String str, int chars) {
-        return str.substring(chars);
+        return str.substring(chars).trim();
+    }
+
+    public String bFirstChar(String str,int chars){
+        return removeLastChars(str,str.length()-(str.length()-chars)).trim();
+    }
+
+    public String acceptText(String in,String mon){
+        if(spleeting(mon,0).trim().equalsIgnoreCase(in)) {
+            return spleeting(mon, 1);
+        }else {
+            return "";
+        }
+    }
+
+    public String spleeting(String in,int index){
+        try {
+            return in.split(" ")[index];
+        }catch (ArrayIndexOutOfBoundsException e){
+            return "";
+        }
     }
 
     public static byte[] readFile(String file) throws IOException {
