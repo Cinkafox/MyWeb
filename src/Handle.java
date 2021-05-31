@@ -34,7 +34,7 @@ public class Handle extends Thread {
 
         String inputurl = getURL(input)[1];
         ldir = ldir + "/" + inputurl;
-        System.out.println("Server > " + socket.getInetAddress() + " is connected with GET" + inputurl);
+        System.out.println("Server > " + socket.getInetAddress() + " is connected with GET:" + inputurl);
         String type = "html";
         String text;
         if (new File(ldir).exists() && new File(ldir).isDirectory()) {
