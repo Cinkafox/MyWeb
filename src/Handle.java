@@ -34,7 +34,7 @@ public class Handle extends Thread {
 
         String inputurl = getURL(input)[1];
         ldir = ldir + "/" + inputurl;
-
+        System.out.println("Server > " + socket.getInetAddress() + " is connected with GET" + inputurl);
         String type = "html";
         String text;
         if (new File(ldir).exists() && new File(ldir).isDirectory()) {
@@ -44,16 +44,20 @@ public class Handle extends Thread {
                 byte[] b = readFile(file.getName());
                 output.write((SetUp(b.length,type(type))).getBytes());
                 output.write(b);
+                System.out.println("Server > load index.html");
             }else {
                 text = html.getHTML();
                 output.write((SetUp(text.length(),type(type))+ text).getBytes());
+                System.out.println("Server > load file explorer:" + ldir);
             }
         }else if(!getType(inputurl).equalsIgnoreCase("") && new File(ldir).exists()){
             byte[] b = readFile(ldir);
             output.write(SetUp(b.length,type(getType(inputurl))).getBytes());
             output.write(b);
+            System.out.println("Server > downloading file:" + ldir);
         }else {
             text = "NOT_FOUND";
+            System.out.println("Server > The user request not found");
             output.write((SetUp(text.length(),type(type))+ text).getBytes());
         }
         output.flush();
